@@ -1,0 +1,3 @@
+[submodule "ESP_Screen_Refs"]
+	path = ESP_Screen_Refs
+	url = git@github.com:DonutCables/ESP_Screen_Refs.git
