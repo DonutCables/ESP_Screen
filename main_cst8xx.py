@@ -6,7 +6,8 @@ import asyncio
 import busio
 from adafruit_display_text import label
 from gc9a01 import GC9A01
-from cst816 import CST816
+from adafruit_cst8xx import Adafruit_CST8XX
+from gc import enable, mem_free
 
 displayio.release_displays()
 
@@ -19,7 +20,8 @@ tft_bl = board.IO3
 
 # cst816
 screen_i2c = busio.I2C(scl=board.IO5, sda=board.IO4)
-touch = CST816(screen_i2c)
+touch = Adafruit_CST8XX(screen_i2c)
+events = touch.EVENTS
 
 # touch.reset()
 # screen_int = board.IO0
@@ -57,20 +59,17 @@ display.root_group = group
 
 async def touch_wait():
     while True:
-        point = touch.get_point()
-        gesture = touch.get_gesture()
-        press = touch.get_touch()
-        distance = touch.get_distance()
-        if press > 0:
-            text = f"Position: {point.x_point},{point.y_point} - Gesture: {gesture} - Pressed? {press} - Distance: {distance.x_dist},{distance.y_dist}"
-            text_area = label.Label(terminalio.FONT, text=text, color=0x000000)
-            text_area.x = 10
-            text_area.y = 120
-            group.append(text_area)
+        if touch.touched:
+            for touch_id, touch in enumerate(touch.touches):
+                x = touch["x"]
+                y = touch["y"]
+                event = events[touch["event_id"]]
+                print(f"touch_id: {touch_id}, x: {x}, y: {y}, event: {event}")
         await asyncio.sleep(0)
 
 
 async def main():
+    enable()
     touch_task = asyncio.create_task(touch_wait())
     await asyncio.gather(touch_task)
 
