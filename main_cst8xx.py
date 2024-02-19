@@ -6,7 +6,7 @@ import asyncio
 import busio
 from adafruit_display_text import label
 from gc9a01 import GC9A01
-from adafruit_cst8xx import Adafruit_CST8XX
+import adafruit_cst8xx
 from gc import enable, mem_free
 
 displayio.release_displays()
@@ -20,8 +20,8 @@ tft_bl = board.IO3
 
 # cst816
 screen_i2c = busio.I2C(scl=board.IO5, sda=board.IO4)
-touch = Adafruit_CST8XX(screen_i2c)
-events = touch.EVENTS
+ctp = adafruit_cst8xx.Adafruit_CST8XX(screen_i2c)
+events = adafruit_cst8xx.EVENTS
 
 # touch.reset()
 # screen_int = board.IO0
@@ -46,12 +46,26 @@ palette[0] = 0x125690
 circle = vectorio.Circle(pixel_shader=palette, radius=120, x=120, y=120)
 group.append(circle)
 
-# Create a text label
-text = "nerds"
-text_area = label.Label(terminalio.FONT, text=text, color=0x000000)
-text_area.x = 30
-text_area.y = 120
-group.append(text_area)
+# Position label
+position = "nerds"
+position_area = label.Label(terminalio.FONT, text=position, scale=2)
+position_area.x = 20
+position_area.y = 100
+group.append(position_area)
+
+# Event label
+event = "nerds"
+event_area = label.Label(terminalio.FONT, text=event, scale=1)
+event_area.x = 20
+event_area.y = 116
+group.append(event_area)
+
+# Touch label
+touchid = "nerds"
+touchid_area = label.Label(terminalio.FONT, text=touchid, scale=1)
+touchid_area.x = 20
+touchid_area.y = 132
+group.append(touchid_area)
 
 # Show the display group
 display.root_group = group
@@ -59,12 +73,14 @@ display.root_group = group
 
 async def touch_wait():
     while True:
-        if touch.touched:
-            for touch_id, touch in enumerate(touch.touches):
+        if ctp.touched:
+            for touch_id, touch in enumerate(ctp.touches):
                 x = touch["x"]
                 y = touch["y"]
                 event = events[touch["event_id"]]
-                print(f"touch_id: {touch_id}, x: {x}, y: {y}, event: {event}")
+                position_area.text = f"Position: {x},{y}"
+                event_area.text = f"Event: {event}"
+                touchid_area.text = f"Touch ID: {touch_id}"
         await asyncio.sleep(0)
 
 
@@ -74,4 +90,5 @@ async def main():
     await asyncio.gather(touch_task)
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

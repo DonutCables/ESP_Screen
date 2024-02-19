@@ -52,21 +52,21 @@ position_area.x = 20
 position_area.y = 100
 group.append(position_area)
 
-# Create a text label
+# Gesture label
 gesture = "nerds"
 gesture_area = label.Label(terminalio.FONT, text=gesture, scale=1)
 gesture_area.x = 20
 gesture_area.y = 116
 group.append(gesture_area)
 
-# Create a text label
+# Pressed label
 pressed = "nerds"
 pressed_area = label.Label(terminalio.FONT, text=pressed, scale=1)
 pressed_area.x = 20
 pressed_area.y = 132
 group.append(pressed_area)
 
-# Create a text label
+# Distance label
 distance = "nerds"
 distance_area = label.Label(terminalio.FONT, text=distance, scale=1)
 distance_area.x = 20
@@ -101,4 +101,5 @@ async def main():
     await asyncio.gather(touch_task)
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
