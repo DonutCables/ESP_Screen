@@ -8,7 +8,6 @@ import pwmio
 from digitalio import DigitalInOut, Pull
 from rotaryio import IncrementalEncoder
 import adafruit_focaltouch
-from digitalio import DigitalInOut, Pull
 from adafruit_display_text import label
 from gc import enable, mem_free
 
@@ -21,7 +20,7 @@ print("init touch")
 screen_i2c = board.I2C()
 irq = DigitalInOut(board.TOUCH_IRQ)
 irq.switch_to_input(pull=Pull.UP)
-ft = adafruit_focaltouch.Adafruit_FocalTouch(i2c=screen_i2c, irq_pin=irq)
+ft = adafruit_focaltouch.Adafruit_FocalTouch(i2c=screen_i2c)  # , irq_pin=irq)
 
 # Encoder init
 print("init encoder")
@@ -120,23 +119,31 @@ class ENCStates:
 async def touch_wait():
     "Primary loop to wait for inputs"
     print("entering loop")
+    button_presses = 0
     while True:
-        print("prerotate")
+        # print("prerotate")
         if ENCS._was_rotated.is_set():
             print("rotated")
             enc_area.text = f"Encoder: {ENCS.encoder_handler()}"
-        print("pretouch")
-        if ft.touched > 0:
-            print("touched")
-            beeper.duty_cycle = 65535 // 3
-            for touch_id, touch in enumerate(ft.touches):
-                x = touch["x"]
-                y = touch["y"]
-                position_area.text = f"Position: {x},{y}"
-                touchid_area.text = f"Touch ID: {touch_id}"
-                beeper.frequency = (x + y) * 2
-            await asyncio.sleep(0)
-            beeper.duty_cycle = 0
+        if not enc_button.value:
+            print("button")
+            button_presses += 1
+            enc_button_area.text = f"Pressed:{button_presses}"
+        # print("pretouch")
+        try:
+            if ft.touched > 0:
+                print("touched")
+                beeper.duty_cycle = 65535 // 3
+                for touch_id, touch in enumerate(ft.touches):
+                    x = touch["x"]
+                    y = touch["y"]
+                    position_area.text = f"Position: {x},{y}"
+                    touchid_area.text = f"Touch ID: {touch_id}"
+                    beeper.frequency = (x + y) * 2
+                await asyncio.sleep(0)
+                beeper.duty_cycle = 0
+        except OSError:
+            pass
         await asyncio.sleep(0)
 
 
